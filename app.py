@@ -1075,19 +1075,10 @@ if st.button(
                 pred == pred_bert
             )
 
-            if agree:
-
-                st.success(
-                    "✅ Both models agree!"
-                )
-
-            else:
-
-                st.warning(
-                    "⚠️ Models disagree "
-                    "on this review."
-                )
-
+	if agree:
+    		st.success("✅ Both models produced the same result!")
+	else:
+    		st.warning("⚠️ The models produced different results for this review.")
 
             # =============================================
             # CONFIDENCE COMPARISON
@@ -1156,11 +1147,11 @@ if st.button(
                 "BERT Confidence":
                     f"{bert_confidence * 100:.1f}%",
 
-                "Agree":
+                "Result Comparison":
                     (
-                        "✅"
+                        "Same"
                         if agree
-                        else "⚠️"
+                        else "Different"
                     )
             })
 
