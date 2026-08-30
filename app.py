@@ -673,82 +673,46 @@ def get_word_contributions(
 # HIGHLIGHT CONTRIBUTION WORDS
 # =========================================================
 
-def render_highlighted_text(
-    contributions
-):
+def render_highlighted_text(contributions):
 
     if not contributions:
-
-        return (
-            "<em>No known words "
-            "to highlight.</em>"
-        )
+        return "<em>No known words to highlight.</em>"
 
     max_abs = max(
-        (
-            abs(difference)
-            for _, difference
-            in contributions
-        ),
+        (abs(diff) for _, diff in contributions),
         default=0
     ) or 1.0
 
     spans = []
 
-    for token, difference in contributions:
+    for tok, diff in contributions:
 
-        intensity = min(
-            abs(difference) / max_abs,
-            1.0
-        )
+        intensity = min(abs(diff) / max_abs, 1.0)
 
-        if difference > 0.05:
+        if diff > 0.05:
+            color = f"rgba(46, 204, 113, {0.15 + 0.55 * intensity:.2f})"
 
-            color = (
-                "rgba("
-                "46, 204, 113, "
-                f"{0.15 + 0.55 * intensity:.2f}"
-                ")"
-            )
-
-        elif difference < -0.05:
-
-            color = (
-                "rgba("
-                "231, 76, 60, "
-                f"{0.15 + 0.55 * intensity:.2f}"
-                ")"
-            )
+        elif diff < -0.05:
+            color = f"rgba(231, 76, 60, {0.15 + 0.55 * intensity:.2f})"
 
         else:
+            color = "rgba(128, 128, 128, 0.08)"
 
-            color = (
-                "rgba("
-                "128, 128, 128, 0.08"
-                ")"
-            )
-
-        spans.append(
-            f"""
-            <span
-                title="log-odds diff:
-                {difference:+.2f}"
-                style="
-                    background-color:{color};
-                    padding:2px 5px;
-                    border-radius:5px;
-                    margin:2px 1px;
-                    display:inline-block;
-                    line-height:1.9;
-                "
-            >
-                {token}
-            </span>
-            """
+        span = (
+            f'<span title="log-odds diff: {diff:+.2f}" '
+            f'style="background-color:{color}; '
+            f'padding:2px 5px; '
+            f'border-radius:5px; '
+            f'margin:2px 1px; '
+            f'display:inline-block; '
+            f'line-height:1.9;">'
+            f'{tok}'
+            f'</span>'
         )
 
-    return " ".join(spans)
+        spans.append(span)
 
+    return " ".join(spans)
 
 # =========================================================
 # ANALYZE BUTTON
