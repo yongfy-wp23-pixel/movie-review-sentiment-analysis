@@ -436,6 +436,35 @@ st.caption(
 )
 
 
+with st.expander("🤖 About the Models", expanded=False):
+    model_col1, model_col2 = st.columns(2)
+
+    with model_col1:
+        st.markdown("### Naive Bayes")
+        st.write("**Process:** TF-IDF → Multinomial Naive Bayes")
+        st.write("**Accuracy:** 85.97%")
+        st.write(
+            "Naive Bayes classifies reviews using statistical patterns "
+            "learned from words and their TF-IDF features."
+        )
+
+    with model_col2:
+        st.markdown("### DistilBERT")
+        st.write("**Process:** Tokenization → Fine-tuned DistilBERT")
+        st.write("**Accuracy:** 90.76%")
+        st.write("**Maximum sequence length:** 256 tokens")
+        st.write(
+            "DistilBERT considers contextual relationships between words "
+            "when classifying the sentiment of a review."
+        )
+
+    st.info(
+        "ℹ️ This prototype performs binary sentiment classification only: "
+        "Positive or Negative. Neutral or mixed comments may therefore be "
+        "classified less accurately because Neutral is not a separate class."
+    )
+
+
 # =========================================================
 # MODEL PERFORMANCE SECTION
 # =========================================================
@@ -492,6 +521,11 @@ with st.sidebar:
     st.write(
         f"Accepted review length: "
         f"**{MIN_CHARS}–{MAX_CHARS} characters**."
+    )
+
+    st.caption(
+        "⚠️ Binary classification only: neutral or mixed comments may be "
+        "less accurate because the model predicts only Positive or Negative."
     )
 
     st.divider()
