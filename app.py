@@ -1063,51 +1063,46 @@ if st.button(
         # MODEL COMPARISON
         # =================================================
 
-        st.divider()
+st.divider()
 
-        if (
-            pred is not None
-            and
-            pred_bert is not None
-        ):
+if pred is not None and pred_bert is not None:
+    agree = pred == pred_bert
 
-            agree = (
-                pred == pred_bert
-            )
+    if agree:
+        st.success("✅ Both models produced the same result!")
+    else:
+        st.warning("⚠️ The models produced different results for this review.")
 
-	if agree:
-    		st.success("✅ Both models produced the same result!")
-	else:
-    		st.warning("⚠️ The models produced different results for this review.")
+    st.subheader("Confidence comparison")
 
-            # =============================================
-            # CONFIDENCE COMPARISON
-            # =============================================
+    chart_data = {
+        "Model": ["Naive Bayes", "DistilBERT"],
+        "Confidence (%)": [nb_confidence * 100, bert_confidence * 100],
+    }
 
-            st.subheader(
-                "Confidence comparison"
-            )
+    st.bar_chart(
+        chart_data,
+        x="Model",
+        y="Confidence (%)",
+        horizontal=True
+    )
 
-            chart_data = {
+    st.session_state.history.append({
+        "Review": review_text.strip()[:60] + (
+            "..." if len(review_text.strip()) > 60 else ""
+        ),
+        "Naive Bayes": "Positive" if pred == 1 else "Negative",
+        "NB Confidence": f"{nb_confidence * 100:.1f}%",
+        "DistilBERT": "Positive" if pred_bert == 1 else "Negative",
+        "BERT Confidence": f"{bert_confidence * 100:.1f}%",
+        "Result Comparison": "Same" if agree else "Different",
+    })
 
-                "Model": [
-                    "Naive Bayes",
-                    "DistilBERT"
-                ],
-
-                "Confidence (%)": [
-                    nb_confidence * 100,
-                    bert_confidence * 100
-                ]
-            }
-
-            st.bar_chart(
-                chart_data,
-                x="Model",
-                y="Confidence (%)",
-                horizontal=True
-            )
-
+else:
+    st.info(
+        "Comparison unavailable because one of the models "
+        "could not produce a prediction."
+    )
 
             # =============================================
             # SAVE TO SESSION HISTORY
