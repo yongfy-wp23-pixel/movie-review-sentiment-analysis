@@ -1063,101 +1063,46 @@ if st.button(
         # MODEL COMPARISON
         # =================================================
 
-st.divider()
+        st.divider()
 
-if pred is not None and pred_bert is not None:
-    agree = pred == pred_bert
+        if pred is not None and pred_bert is not None:
+            agree = pred == pred_bert
 
-    if agree:
-        st.success("✅ Both models produced the same result!")
-    else:
-        st.warning("⚠️ The models produced different results for this review.")
+            if agree:
+                st.success("✅ Both models produced the same result!")
+            else:
+                st.warning("⚠️ The models produced different results for this review.")
 
-    st.subheader("Confidence comparison")
+            st.subheader("Confidence comparison")
 
-    chart_data = {
-        "Model": ["Naive Bayes", "DistilBERT"],
-        "Confidence (%)": [nb_confidence * 100, bert_confidence * 100],
-    }
+            chart_data = {
+                "Model": ["Naive Bayes", "DistilBERT"],
+                "Confidence (%)": [nb_confidence * 100, bert_confidence * 100],
+            }
 
-    st.bar_chart(
-        chart_data,
-        x="Model",
-        y="Confidence (%)",
-        horizontal=True
-    )
-
-    st.session_state.history.append({
-        "Review": review_text.strip()[:60] + (
-            "..." if len(review_text.strip()) > 60 else ""
-        ),
-        "Naive Bayes": "Positive" if pred == 1 else "Negative",
-        "NB Confidence": f"{nb_confidence * 100:.1f}%",
-        "DistilBERT": "Positive" if pred_bert == 1 else "Negative",
-        "BERT Confidence": f"{bert_confidence * 100:.1f}%",
-        "Result Comparison": "Same" if agree else "Different",
-    })
-
-else:
-    st.info(
-        "Comparison unavailable because one of the models "
-        "could not produce a prediction."
-    )
-
-            # =============================================
-            # SAVE TO SESSION HISTORY
-            # =============================================
+            st.bar_chart(
+                chart_data,
+                x="Model",
+                y="Confidence (%)",
+                horizontal=True
+            )
 
             st.session_state.history.append({
-
-                "Review":
-                    review_text
-                    .strip()[:60]
-                    +
-                    (
-                        "..."
-                        if len(
-                            review_text.strip()
-                        ) > 60
-                        else ""
-                    ),
-
-                "Naive Bayes":
-                    (
-                        "Positive"
-                        if pred == 1
-                        else "Negative"
-                    ),
-
-                "NB Confidence":
-                    f"{nb_confidence * 100:.1f}%",
-
-                "DistilBERT":
-                    (
-                        "Positive"
-                        if pred_bert == 1
-                        else "Negative"
-                    ),
-
-                "BERT Confidence":
-                    f"{bert_confidence * 100:.1f}%",
-
-                "Result Comparison":
-                    (
-                        "Same"
-                        if agree
-                        else "Different"
-                    )
+                "Review": review_text.strip()[:60] + (
+                    "..." if len(review_text.strip()) > 60 else ""
+                ),
+                "Naive Bayes": "Positive" if pred == 1 else "Negative",
+                "NB Confidence": f"{nb_confidence * 100:.1f}%",
+                "DistilBERT": "Positive" if pred_bert == 1 else "Negative",
+                "BERT Confidence": f"{bert_confidence * 100:.1f}%",
+                "Result Comparison": "Same" if agree else "Different",
             })
 
         else:
-
             st.info(
-                "Comparison unavailable because "
-                "one of the models could not "
-                "produce a prediction."
+                "Comparison unavailable because one of the models "
+                "could not produce a prediction."
             )
-
 
 # =========================================================
 # SESSION HISTORY TABLE
