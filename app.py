@@ -577,54 +577,31 @@ review_text = st.text_area(
 # RESULT CARD
 # =========================================================
 
-def render_result_card(
-    model_name,
-    label,
-    confidence,
-    accuracy
-):
+def render_result_card(model_name, label, confidence, accuracy):
 
-    css_class = (
-        "result-positive"
-        if label == "Positive"
-        else "result-negative"
-    )
+    css_class = "result-positive" if label == "Positive" else "result-negative"
+    icon = "😊" if label == "Positive" else "☹️"
 
-    icon = (
-        "😊"
-        if label == "Positive"
-        else "☹️"
+    html = (
+        f'<div class="result-card {css_class}">'
+        f'<div class="result-label">{icon} {label}</div>'
+        f'<div class="result-sub">'
+        f'{model_name} · Confidence {confidence * 100:.1f}%'
+        f'</div>'
+        f'</div>'
     )
 
     st.markdown(
-        f"""
-        <div class="result-card {css_class}">
-
-            <div class="result-label">
-                {icon} {label}
-            </div>
-
-            <div class="result-sub">
-                {model_name}
-                · Confidence
-                {confidence * 100:.1f}%
-            </div>
-
-        </div>
-        """,
+        html,
         unsafe_allow_html=True
     )
 
     st.progress(
-        min(
-            max(confidence, 0.0),
-            1.0
-        )
+        min(max(confidence, 0.0), 1.0)
     )
 
     st.caption(
-        f"Model accuracy: "
-        f"{accuracy * 100:.2f}%"
+        f"Model accuracy: {accuracy * 100:.2f}%"
     )
 
 
