@@ -9,7 +9,7 @@ from deep_translator import GoogleTranslator
 
 BASE_DIR = Path(__file__).resolve().parent
 
-MIN_CHARS = 10
+MIN_CHARS = 5
 MAX_CHARS = 1500
 MIN_ALPHA_RATIO = 0.5
 MAX_LEN = 256
