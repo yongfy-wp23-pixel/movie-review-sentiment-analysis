@@ -19,7 +19,7 @@ BASE_DIR = Path(__file__).resolve().parent
 # BUSINESS RULES
 # =========================================================
 
-MIN_CHARS = 5
+MIN_CHARS = 10
 MAX_CHARS = 1500
 MIN_ALPHA_RATIO = 0.5
 MAX_LEN = 256
@@ -208,7 +208,11 @@ def validate_review(text):
             f"{MAX_CHARS} characters."
         )
 
-    # Check that enough alphabetic characters are present
+    # Multilingual validation:
+    # Check that enough of the input consists of alphabetic characters.
+    # This works better than requiring words separated by spaces,
+    # because languages such as Chinese, Japanese and Thai may not
+    # separate words in the same way as English.
     letters = sum(
         character.isalpha()
         for character in stripped
@@ -227,27 +231,7 @@ def validate_review(text):
         return (
             False,
             "This doesn't look like a valid text review. "
-            "Please enter a real sentence or two."
-        )
-
-    # Require at least 3 words
-    words = re.findall(
-        r"[^\W\d_]+",
-        stripped,
-        flags=re.UNICODE
-    )
-
-    real_words = [
-        word
-        for word in words
-        if len(word) > 1
-    ]
-
-    if len(real_words) < 3:
-        return (
-            False,
-            "Please write a slightly more detailed review "
-            "(at least a few real words)."
+            "Please enter a meaningful movie review."
         )
 
     return True, None
