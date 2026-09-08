@@ -179,10 +179,7 @@ with st.sidebar:
             "and the cinematography were excellent. I loved every moment.",
         "🤢 Negative review":
             "What a waste of time. The plot made no sense, the dialogue was "
-            "terrible, and the movie was extremely boring.",
-        "😐 Mixed review":
-            "The visuals were stunning and the lead performance was solid, "
-            "but the pacing dragged badly and the ending felt rushed.",
+            "terrible, and the movie was extremely boring."
     }
 
     for label, text in example_reviews.items():
