@@ -4,11 +4,13 @@ from pathlib import Path
 import streamlit as st
 import torch
 from transformers import DistilBertTokenizerFast, DistilBertForSequenceClassification
+from langdetect import detect, LangDetectException
+from deep_translator import GoogleTranslator
 
 BASE_DIR = Path(__file__).resolve().parent
 
 MIN_CHARS = 10
-MAX_CHARS = 3000
+MAX_CHARS = 1500
 MIN_ALPHA_RATIO = 0.5
 MAX_LEN = 256
 
@@ -130,8 +132,9 @@ bert_tokenizer, bert_model = load_distilbert()
 st.title("🎬 Movie Review Sentiment Analysis")
 
 st.caption(
-    "Enter a movie review below to determine whether its overall sentiment "
-    "is Positive or Negative using the trained DistilBERT model."
+    "Enter a movie review in English or another language. Non-English reviews "
+    "will be translated to English before DistilBERT determines whether the "
+    "sentiment is Positive or Negative."
 )
 
 with st.expander("🤖 About the Model", expanded=False):
@@ -148,7 +151,9 @@ with st.expander("🤖 About the Model", expanded=False):
     st.info(
         "ℹ️ This prototype performs binary sentiment classification only: "
         "Positive or Negative. Neutral or mixed comments may be less accurately "
-        "represented because Neutral is not a separate class."
+        "represented because Neutral is not a separate class. Non-English reviews "
+        "are automatically translated to English before classification, so translation "
+        "may slightly affect the original meaning or sentiment."
     )
 
 with st.expander("📊 Model Performance", expanded=False):
@@ -162,7 +167,8 @@ with st.sidebar:
     st.header("ℹ️ About")
     st.write(
         "This application uses a fine-tuned **DistilBERT** model to classify "
-        "movie reviews as **Positive** or **Negative**."
+        "movie reviews as **Positive** or **Negative**. Non-English reviews are "
+        "automatically translated to English before classification."
     )
     st.write(f"Accepted review length: **{MIN_CHARS}–{MAX_CHARS} characters**.")
     st.caption(
@@ -179,7 +185,7 @@ with st.sidebar:
             "and the cinematography were excellent. I loved every moment.",
         "🤢 Negative review":
             "What a waste of time. The plot made no sense, the dialogue was "
-            "terrible, and the movie was extremely boring."
+            "terrible, and the movie was extremely boring.",
     }
 
     for label, text in example_reviews.items():
@@ -203,6 +209,7 @@ review_text = st.text_area(
 )
 
 st.caption(f"{len(review_text)} / {MAX_CHARS} characters")
+st.caption("🌐 Non-English reviews will be automatically translated to English before analysis.")
 
 def render_result_card(label, confidence):
     css_class = "result-positive" if label == "Positive" else "result-negative"
@@ -230,8 +237,22 @@ if st.button("Analyze Sentiment", type="primary"):
 
     else:
         try:
-            with st.spinner("Analyzing review with DistilBERT..."):
-                bert_text = preprocess_bert(review_text)
+            with st.spinner("Detecting language and analyzing sentiment..."):
+                analysis_text, detected_language, was_translated = (
+                    detect_and_translate(review_text)
+                )
+
+                if was_translated:
+                    st.info(
+                        f"🌐 Detected language: `{detected_language}`. "
+                        "The review was translated to English before sentiment analysis."
+                    )
+                    st.markdown("**Translated English review:**")
+                    st.write(analysis_text)
+                else:
+                    st.caption("🌐 Detected language: English")
+
+                bert_text = preprocess_bert(analysis_text)
 
                 inputs = bert_tokenizer(
                     bert_text,
@@ -255,19 +276,22 @@ if st.button("Analyze Sentiment", type="primary"):
             if confidence < 0.60:
                 st.warning(
                     "The model has relatively low confidence in this prediction. "
-                    "The review may contain mixed, unclear, or ambiguous sentiment."
+                    "The review may contain unclear, ambiguous, neutral, or mixed sentiment."
                 )
 
             st.session_state.history.append({
                 "Review": review_text.strip()[:70] + (
                     "..." if len(review_text.strip()) > 70 else ""
                 ),
+                "Language": detected_language,
+                "Translated": "Yes" if was_translated else "No",
                 "Prediction": label,
                 "Confidence": f"{confidence * 100:.1f}%",
             })
 
         except Exception as error:
-            st.error(f"Sentiment prediction failed: {error}")
+            st.error(str(error))
+
 
 if st.session_state.history:
     st.divider()
