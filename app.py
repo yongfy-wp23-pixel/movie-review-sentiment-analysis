@@ -199,8 +199,7 @@ def validate_review(text):
 
     if len(text) < MIN_CHARS:
         return False, (
-            f"Please enter at least "
-            f"{MIN_CHARS} characters."
+            f"Please enter at least {MIN_CHARS} characters."
         )
 
     if len(text) > MAX_CHARS:
@@ -239,14 +238,17 @@ def predict_sentiment(review):
     # Load model only when prediction is needed
     tokenizer, model = load_model()
 
+    # Detect and translate language
     translated_text, lang, translated = (
         detect_and_translate(review)
     )
 
+    # Preprocess review
     processed_text = preprocess(
         translated_text
     )
 
+    # Tokenize review
     inputs = tokenizer(
         processed_text,
         truncation=True,
@@ -255,6 +257,7 @@ def predict_sentiment(review):
         return_tensors="pt"
     )
 
+    # Perform prediction
     with torch.no_grad():
 
         outputs = model(**inputs)
@@ -293,9 +296,6 @@ def predict_sentiment(review):
 
 if "reviews" not in st.session_state:
     st.session_state.reviews = []
-
-if "example_review" not in st.session_state:
-    st.session_state.example_review = ""
 
 
 # ============================================================
@@ -351,54 +351,14 @@ with review_tab:
         MOVIES
     )
 
-    st.subheader(
-        "Try an Example"
-    )
-
-    example_col1, example_col2 = st.columns(2)
-
-    with example_col1:
-
-        if st.button(
-            "😊 Positive Example",
-            use_container_width=True
-        ):
-
-            st.session_state.example_review = (
-                "The movie was absolutely amazing. "
-                "The acting was excellent and the "
-                "story was very engaging."
-            )
-
-            st.rerun()
-
-    with example_col2:
-
-        if st.button(
-            "☹️ Negative Example",
-            use_container_width=True
-        ):
-
-            st.session_state.example_review = (
-                "This movie was extremely disappointing. "
-                "The story was boring and the acting "
-                "was terrible."
-            )
-
-            st.rerun()
-
     review = st.text_area(
         "Your Movie Review:",
-        value=st.session_state.example_review,
         height=170,
-        placeholder=(
-            "Enter your opinion about the movie..."
-        )
+        placeholder="Enter your opinion about the movie..."
     )
 
     st.caption(
-        f"{len(review)} / "
-        f"{MAX_CHARS} characters"
+        f"{len(review)} / {MAX_CHARS} characters"
     )
 
     st.caption(
@@ -432,13 +392,14 @@ with review_tab:
             try:
 
                 with st.spinner(
-                    "Analyzing review..."
+                    "Submitting review..."
                 ):
 
                     result = predict_sentiment(
                         review
                     )
 
+                # Store review and hidden sentiment result
                 st.session_state.reviews.append(
                     {
                         "Movie": selected_movie,
@@ -456,35 +417,25 @@ with review_tab:
                     }
                 )
 
+                # Audience only sees submission confirmation
                 st.success(
                     "✅ Thank you. "
-                    "Your review has been submitted "
-                    "successfully."
+                    "Your review has been submitted successfully."
                 )
 
                 if result["translated"]:
 
                     st.info(
-                        f"Detected Language: "
+                        f"🌐 Detected language: "
                         f"{result['language']}. "
-                        f"The review was translated "
-                        f"to English before analysis."
+                        f"Your review was translated "
+                        f"before processing."
                     )
-
-                    with st.expander(
-                        "View Translated Review"
-                    ):
-
-                        st.write(
-                            result["translated_text"]
-                        )
-
-                st.session_state.example_review = ""
 
             except Exception as e:
 
                 st.error(
-                    "Unable to analyze the review."
+                    "Unable to submit the review."
                 )
 
                 st.exception(e)
@@ -501,7 +452,7 @@ with producer_tab:
     )
 
     st.write(
-        "Select a movie to view its overall "
+        "Select a movie to view the overall "
         "audience sentiment and submitted reviews."
     )
 
@@ -564,7 +515,7 @@ with producer_tab:
 
 
     # ========================================================
-    # SUMMARY
+    # SUMMARY METRICS
     # ========================================================
 
     st.subheader(
@@ -655,27 +606,24 @@ with producer_tab:
         if positive_rate > negative_rate:
 
             st.success(
-                f"Overall audience response is "
-                f"mostly positive. "
-                f"{positive_rate:.1f}% of reviews "
+                f"Overall audience response is mostly positive. "
+                f"{positive_rate:.1f}% of submitted reviews "
                 f"for {producer_movie} are positive."
             )
 
         elif negative_rate > positive_rate:
 
             st.error(
-                f"Overall audience response is "
-                f"mostly negative. "
-                f"{negative_rate:.1f}% of reviews "
+                f"Overall audience response is mostly negative. "
+                f"{negative_rate:.1f}% of submitted reviews "
                 f"for {producer_movie} are negative."
             )
 
         else:
 
             st.warning(
-                "Audience sentiment is evenly "
-                "divided between positive "
-                "and negative reviews."
+                "Audience sentiment is evenly divided "
+                "between positive and negative reviews."
             )
 
 
@@ -800,8 +748,7 @@ with st.expander(
         st.session_state.reviews = []
 
         st.success(
-            "All submitted reviews "
-            "have been cleared."
+            "All submitted reviews have been cleared."
         )
 
         st.rerun()
