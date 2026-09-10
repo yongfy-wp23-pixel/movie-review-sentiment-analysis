@@ -600,7 +600,7 @@ with producer_tab:
         st.divider()
 
         st.subheader(
-            "📋 Producer Summary"
+            "📋 Summary"
         )
 
         if positive_rate > negative_rate:
