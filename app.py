@@ -363,7 +363,7 @@ with review_tab:
 
     st.caption(
         "🌐 Non-English reviews are automatically "
-        "translated into English before analysis."
+        "translated into English before processing."
     )
 
 
@@ -399,7 +399,7 @@ with review_tab:
                         review
                     )
 
-                # Store review and hidden sentiment result
+                # Store review and sentiment result
                 st.session_state.reviews.append(
                     {
                         "Movie": selected_movie,
@@ -452,7 +452,7 @@ with producer_tab:
     )
 
     st.write(
-        "Select a movie to view the overall "
+        "Select a movie to view its overall "
         "audience sentiment and submitted reviews."
     )
 
@@ -665,6 +665,11 @@ st.header(
     "🎞️ Overall Movie Overview"
 )
 
+st.write(
+    "Overview of the total number of audience reviews "
+    "submitted for each movie."
+)
+
 overview_data = []
 
 for movie in MOVIES:
@@ -675,44 +680,10 @@ for movie in MOVIES:
         if review["Movie"] == movie
     ]
 
-    total = len(
-        movie_data
-    )
-
-    positive = sum(
-        review["Prediction"] == "Positive"
-        for review in movie_data
-    )
-
-    negative = sum(
-        review["Prediction"] == "Negative"
-        for review in movie_data
-    )
-
-    positive_percentage = (
-        positive / total * 100
-        if total > 0
-        else 0
-    )
-
-    negative_percentage = (
-        negative / total * 100
-        if total > 0
-        else 0
-    )
-
     overview_data.append(
         {
             "Movie": movie,
-            "Total Reviews": total,
-            "Positive": positive,
-            "Negative": negative,
-            "Positive Rate": (
-                f"{positive_percentage:.1f}%"
-            ),
-            "Negative Rate": (
-                f"{negative_percentage:.1f}%"
-            )
+            "Total Reviews": len(movie_data)
         }
     )
 
