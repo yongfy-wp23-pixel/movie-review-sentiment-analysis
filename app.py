@@ -34,10 +34,48 @@ MOVIES = [
 
 
 # ============================================================
+# STREAMLIT PAGE CONFIGURATION
+# ============================================================
+
+st.set_page_config(
+    page_title="Movie Audience Sentiment Dashboard",
+    page_icon="🎬",
+    layout="wide"
+)
+
+
+# ============================================================
+# CUSTOM STYLE
+# ============================================================
+
+st.markdown(
+    """
+    <style>
+
+    .main-title {
+        font-size: 38px;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+    .subtitle {
+        font-size: 17px;
+        color: gray;
+        margin-bottom: 25px;
+    }
+
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+
+# ============================================================
 # TEXT PREPROCESSING
 # ============================================================
 
 def preprocess(text):
+
     text = text.lower()
 
     # Remove HTML tags
@@ -112,7 +150,9 @@ def detect_and_translate(text):
         return text, lang, False
 
     if lang == "unknown":
-        raise ValueError("Unable to detect the language.")
+        raise ValueError(
+            "Unable to detect the language."
+        )
 
     translated = GoogleTranslator(
         source="auto",
@@ -132,19 +172,18 @@ def load_model():
     model_dir = BASE_DIR / "distilbert_model"
 
     tokenizer = DistilBertTokenizerFast.from_pretrained(
-        str(model_dir)
+        str(model_dir),
+        local_files_only=True
     )
 
     model = DistilBertForSequenceClassification.from_pretrained(
-        str(model_dir)
+        str(model_dir),
+        local_files_only=True
     )
 
     model.eval()
 
     return tokenizer, model
-
-
-tokenizer, model = load_model()
 
 
 # ============================================================
@@ -160,7 +199,8 @@ def validate_review(text):
 
     if len(text) < MIN_CHARS:
         return False, (
-            f"Please enter at least {MIN_CHARS} characters."
+            f"Please enter at least "
+            f"{MIN_CHARS} characters."
         )
 
     if len(text) > MAX_CHARS:
@@ -183,7 +223,9 @@ def validate_review(text):
         non_space == 0
         or letters / non_space < MIN_ALPHA_RATIO
     ):
-        return False, "Please enter a meaningful movie review."
+        return False, (
+            "Please enter a meaningful movie review."
+        )
 
     return True, ""
 
@@ -193,6 +235,9 @@ def validate_review(text):
 # ============================================================
 
 def predict_sentiment(review):
+
+    # Load model only when prediction is needed
+    tokenizer, model = load_model()
 
     translated_text, lang, translated = (
         detect_and_translate(review)
@@ -243,43 +288,6 @@ def predict_sentiment(review):
 
 
 # ============================================================
-# STREAMLIT PAGE CONFIGURATION
-# ============================================================
-
-st.set_page_config(
-    page_title="Movie Audience Sentiment Dashboard",
-    page_icon="🎬",
-    layout="wide"
-)
-
-
-# ============================================================
-# CUSTOM STYLE
-# ============================================================
-
-st.markdown(
-    """
-    <style>
-
-    .main-title {
-        font-size: 38px;
-        font-weight: 700;
-        margin-bottom: 5px;
-    }
-
-    .subtitle {
-        font-size: 17px;
-        color: gray;
-        margin-bottom: 25px;
-    }
-
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-
-# ============================================================
 # SESSION STATE
 # ============================================================
 
@@ -303,8 +311,8 @@ st.markdown(
 
 st.markdown(
     '<div class="subtitle">'
-    'Collect audience movie reviews and analyze overall '
-    'sentiment for each movie.'
+    'Collect audience movie reviews and analyze '
+    'overall sentiment for each movie.'
     '</div>',
     unsafe_allow_html=True
 )
@@ -328,7 +336,9 @@ review_tab, producer_tab = st.tabs(
 
 with review_tab:
 
-    st.header("📝 Submit Movie Review")
+    st.header(
+        "📝 Submit Movie Review"
+    )
 
     st.write(
         "Select a movie and submit your review."
@@ -341,7 +351,9 @@ with review_tab:
         MOVIES
     )
 
-    st.subheader("Try an Example")
+    st.subheader(
+        "Try an Example"
+    )
 
     example_col1, example_col2 = st.columns(2)
 
@@ -379,17 +391,25 @@ with review_tab:
         "Your Movie Review:",
         value=st.session_state.example_review,
         height=170,
-        placeholder="Enter your opinion about the movie..."
+        placeholder=(
+            "Enter your opinion about the movie..."
+        )
     )
 
     st.caption(
-        f"{len(review)} / {MAX_CHARS} characters"
+        f"{len(review)} / "
+        f"{MAX_CHARS} characters"
     )
 
     st.caption(
         "🌐 Non-English reviews are automatically "
         "translated into English before analysis."
     )
+
+
+    # ========================================================
+    # SUBMIT REVIEW
+    # ========================================================
 
     if st.button(
         "Submit Review",
@@ -403,7 +423,9 @@ with review_tab:
 
         if not valid:
 
-            st.warning(message)
+            st.warning(
+                message
+            )
 
         else:
 
@@ -428,13 +450,16 @@ with review_tab:
                             else "No"
                         ),
                         "Prediction": result["label"],
-                        "Confidence": result["confidence"] * 100
+                        "Confidence": (
+                            result["confidence"] * 100
+                        )
                     }
                 )
 
                 st.success(
-                    "✅ Thank you. Your review has been "
-                    "submitted successfully."
+                    "✅ Thank you. "
+                    "Your review has been submitted "
+                    "successfully."
                 )
 
                 if result["translated"]:
@@ -442,8 +467,8 @@ with review_tab:
                     st.info(
                         f"Detected Language: "
                         f"{result['language']}. "
-                        f"The review was translated to English "
-                        f"before analysis."
+                        f"The review was translated "
+                        f"to English before analysis."
                     )
 
                     with st.expander(
@@ -459,8 +484,10 @@ with review_tab:
             except Exception as e:
 
                 st.error(
-                    f"Unable to analyze the review: {e}"
+                    "Unable to analyze the review."
                 )
+
+                st.exception(e)
 
 
 # ============================================================
@@ -469,11 +496,13 @@ with review_tab:
 
 with producer_tab:
 
-    st.header("📊 Producer Sentiment Dashboard")
+    st.header(
+        "📊 Producer Sentiment Dashboard"
+    )
 
     st.write(
-        "Select a movie to view its overall audience "
-        "sentiment and submitted reviews."
+        "Select a movie to view its overall "
+        "audience sentiment and submitted reviews."
     )
 
     st.divider()
@@ -483,6 +512,11 @@ with producer_tab:
         MOVIES,
         key="producer_movie"
     )
+
+
+    # ========================================================
+    # FILTER REVIEWS BY MOVIE
+    # ========================================================
 
     movie_reviews = [
         item
@@ -504,18 +538,23 @@ with producer_tab:
         for item in movie_reviews
     )
 
+
+    # ========================================================
+    # CALCULATE PERCENTAGES
+    # ========================================================
+
     if total_reviews > 0:
 
         positive_rate = (
-            positive_reviews /
-            total_reviews *
-            100
+            positive_reviews
+            / total_reviews
+            * 100
         )
 
         negative_rate = (
-            negative_reviews /
-            total_reviews *
-            100
+            negative_reviews
+            / total_reviews
+            * 100
         )
 
     else:
@@ -525,7 +564,7 @@ with producer_tab:
 
 
     # ========================================================
-    # SUMMARY METRICS
+    # SUMMARY
     # ========================================================
 
     st.subheader(
@@ -616,24 +655,27 @@ with producer_tab:
         if positive_rate > negative_rate:
 
             st.success(
-                f"Overall audience response is mostly positive. "
-                f"{positive_rate:.1f}% of submitted reviews "
+                f"Overall audience response is "
+                f"mostly positive. "
+                f"{positive_rate:.1f}% of reviews "
                 f"for {producer_movie} are positive."
             )
 
         elif negative_rate > positive_rate:
 
             st.error(
-                f"Overall audience response is mostly negative. "
-                f"{negative_rate:.1f}% of submitted reviews "
+                f"Overall audience response is "
+                f"mostly negative. "
+                f"{negative_rate:.1f}% of reviews "
                 f"for {producer_movie} are negative."
             )
 
         else:
 
             st.warning(
-                "Audience sentiment is evenly divided "
-                "between positive and negative reviews."
+                "Audience sentiment is evenly "
+                "divided between positive "
+                "and negative reviews."
             )
 
 
@@ -666,7 +708,7 @@ with producer_tab:
 
 
 # ============================================================
-# ALL MOVIES OVERVIEW
+# OVERALL MOVIE OVERVIEW
 # ============================================================
 
 st.divider()
@@ -717,8 +759,12 @@ for movie in MOVIES:
             "Total Reviews": total,
             "Positive": positive,
             "Negative": negative,
-            "Positive Rate": f"{positive_percentage:.1f}%",
-            "Negative Rate": f"{negative_percentage:.1f}%"
+            "Positive Rate": (
+                f"{positive_percentage:.1f}%"
+            ),
+            "Negative Rate": (
+                f"{negative_percentage:.1f}%"
+            )
         }
     )
 
@@ -735,7 +781,7 @@ st.dataframe(
 
 
 # ============================================================
-# CLEAR DATA
+# DATA MANAGEMENT
 # ============================================================
 
 with st.expander(
@@ -743,8 +789,8 @@ with st.expander(
 ):
 
     st.warning(
-        "Reviews are stored only during the current "
-        "Streamlit session."
+        "Reviews are stored only during the "
+        "current Streamlit session."
     )
 
     if st.button(
@@ -754,7 +800,8 @@ with st.expander(
         st.session_state.reviews = []
 
         st.success(
-            "All submitted reviews have been cleared."
+            "All submitted reviews "
+            "have been cleared."
         )
 
         st.rerun()
